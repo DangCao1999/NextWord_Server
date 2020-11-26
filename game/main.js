@@ -1,40 +1,45 @@
+
 const config = require('../untils/config');
 
 let checkword = require('./word');
 const word = require('./word');
 async function main(room, io, socket) {
   console.log("----Main Run----");
-  let nextTurnFlag = false;
+  let nextTurnFlag = true;
   let wordStore = [];
   let wordAnswer = '';
   let time = 0;
   let users = room.users;
-  let i = 0;
+  let turnCounter = 0;
   socket.on("wordAnswer", (word) => {
     wordStore.push(word);
     wordAnswer = word;
   })
+  
+
   while (checkUserLength(users)) {
     if (wordAnswer != '') {
       console.log("wordAnswer");
       console.log(wordAnswer);
+      users[turnCounter].addWordAnswer(wordAnswer);
       if (checkWordCorrect(wordAnswer, wordStore)) {      
-        users = executeUserLose(users, users[i], io, room.roomPin);
+        users = executeUserLose(users, turnCounter, io, room.roomPin);
       }
       nextTurnFlag = true;
-      i = increaseCounter(users.length, i);
+      turnCounter = increaseCounter(users.length, turnCounter);
       wordAnswer = '';
+      sendMess('wordStore' ,wordStore, io, room.roomPin); // send wordstore
     }
     else {
       if(time > 10)
       {
-        i = increaseCounter(users.length, i);
+        turnCounter = increaseCounter(users.length, turnCounter);
         time = 0;
         nextTurnFlag = true;
-        users = executeUserLose(users, users[i], io, room.roomPin);
+        users = executeUserLose(users, turnCounter, io, room.roomPin);
       }
     }
-    nextTurnFlag = sendTurn(nextTurnFlag, users[i], io, room.roomPin);
+    nextTurnFlag = sendTurn(nextTurnFlag, users[turnCounter], io, room.roomPin);
     io.to(room.roomPin.toString()).emit("time", time);
     time++;
     await sleep(1000);
@@ -42,7 +47,6 @@ async function main(room, io, socket) {
 
   //winner is extent in array users
 
-  
 }
 
 
@@ -60,10 +64,16 @@ function checkWordCorrect(word, wordStore){
   return false;
 }
 
-function executeUserLose(users, userLose, io, roomPin){
+// function firstSendMess(users, )
+function executeUserLose(users, turnCounter, io, roomPin){
   console.log("user lose");
-  users = users.filter( usr => usr.id !== userLose.id ); //find and remove
+  users = users.splice(turnCounter, 1); //find and remove
   io.to(roomPin.toString()).emit("loseUser", userLose);
+  let mess = {
+    users: users,
+    indexCurrentUser: turnCounter 
+  }
+  sendMess("usersLive", mess, io, room.roomPin);
   return users;
 }
 
@@ -72,6 +82,10 @@ function sendTurn(flagNextTurn, user, io, roomPin) {
     io.to(roomPin.toString()).emit("turnUser", user);
     return false;
   }
+}
+
+function sendMess(channel, mess, io, roomPin){
+  io.to(roomPin.toString()).emit(channel, mess);
 }
 
 function increaseCounter(length, i){

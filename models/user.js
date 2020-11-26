@@ -4,5 +4,11 @@ module.exports = class User {
     {
         this.id = id;
         this.name = name;
+        this.word = [];
+    }
+
+    addWordAnswer(word)
+    {
+        this.word.push(word);
     }
 }

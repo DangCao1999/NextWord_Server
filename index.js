@@ -56,6 +56,7 @@ io.on('connection', socket => {
     }
     else {
       room.addUser(user);
+      io.to(roomPin).emit("userInLobby", room.users);
       io.to(roomPin).emit("noti", 'co ng join room' + socket.id);
     }
     //console.log(room);
