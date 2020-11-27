@@ -14,7 +14,7 @@ const Room = require('./models/room');
 const User = require('./models/user');
 
 const bodyParser = require('body-parser');
-const main = require('./game/main');
+const Main = require('./game/main');
 
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -68,7 +68,8 @@ io.on('connection', socket => {
     console.log("startPress" + roomPin);
     let room = findRoomByPin(Rooms, roomPin);
     console.log(typeof(roomPin));
-    main(room, io, socket);
+    main = new Main(room, io);
+    main.start();
   })
 
 
