@@ -7,6 +7,7 @@ const { randomPin, findRoomByPin } = require('./untils/until');
 const app = express();
 
 const server = http.createServer(app);
+
 const io = socketio(server);
 
 const Room = require('./models/room');
@@ -15,6 +16,16 @@ const User = require('./models/user');
 
 const bodyParser = require('body-parser');
 const Main = require('./game/main');
+
+let admin = require("firebase-admin");
+
+let serviceAccount = require("./key.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://nextword3659.firebaseio.com"
+});
+
 
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -25,6 +36,8 @@ app.get('/', (req, res) => {
 });
 
 
+
+
 app.post('/newroom', (req, res)=>{
   console.log("----new room---- "+req.body);
   let roomPin = randomPin();
@@ -33,7 +46,9 @@ app.post('/newroom', (req, res)=>{
   res.status(200).send({roomId: roomPin});
 });
 
-let Rooms = []
+let Rooms = [];
+let RoomsPlaying = [];
+
 io.on('connection', socket => {
   console.log("someone connection");
   
@@ -69,10 +84,14 @@ io.on('connection', socket => {
     let room = findRoomByPin(Rooms, roomPin);
     console.log(typeof(roomPin));
     main = new Main(room, io);
+    RoomsPlaying.push(main);
     main.start();
   })
 
-
+  socket.on("wordAnswer", (data)=>{
+    let main = RoomsPlaying.find(ele => ele.room.roomPin == data.roomPin);
+    main.answerWord(data.word);
+  })
 
   // console.log("connection join some room" + socket.rooms.id);
 });

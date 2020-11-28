@@ -3,6 +3,7 @@ module.exports = class Room {
         this.roomPin = roomPin;
         this.ownerId = ownerId;
         this.users = [];
+        this.usersLose = [];
       }
     addUser(user){
       this.users.push(user);

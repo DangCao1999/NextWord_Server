@@ -10,6 +10,7 @@ class Main {
     this.io = io,
     this.wordStore = [],
     this.users = room.users,
+    this.usersLose = [],
     this.turnCounter = 0;
     this.timeAndNextTurnFlag = {
       time: 0,
@@ -83,20 +84,22 @@ class Main {
   executeUserLose(users, turnCounter, io, roomPin){
     console.log("user lose");
     io.to(roomPin.toString()).emit("loseUser", users[turnCounter]);
+    this.usersLose.push(users[turnCounter]);
     users.splice(turnCounter, 1); //find and remove
-    let mess = {
-      users: users,
-      indexCurrentUser: turnCounter 
-    }
-    this.sendMess("usersLive", mess, io, roomPin);
+    this.sendMess("usersLive", users, io, roomPin);
     return users;
   }
   
   sendTurn(timeAndNextTurnFlag, user, io, roomPin) {
     if (timeAndNextTurnFlag.nextTurnFlag) {
-      io.to(roomPin.toString()).emit("turnUser", user);
+      let mess = {
+        turnCounter: this.turnCounter,
+        user: user
+      }
+      this.sendMess('turnUser', mess, io, roomPin);
       timeAndNextTurnFlag.time = 0;
       timeAndNextTurnFlag.nextTurnFlag = false;
+
     }
   }
   
@@ -121,6 +124,14 @@ class Main {
     return users.length > 1;
   }
 
+  answerWord(word)
+  {
+    this.wordStore.push(word);
+    this.wordAnswer = word;
+    this.users[this.turnCounter].addWordAnswer(word);
+  }
+
+  
 }
 
 
