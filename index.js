@@ -5,7 +5,7 @@ const socketio = require('socket.io');
 
 const { randomPin, findRoomByPin } = require('./untils/until');
 const app = express();
-
+const cors = require('cors');
 const server = http.createServer(app);
 
 const io = socketio(server);
@@ -26,11 +26,13 @@ admin.initializeApp({
   databaseURL: "https://nextword3659.firebaseio.com"
 });
 
-
-
+//add middleware
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 
+
+/// Add router here
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
@@ -51,16 +53,6 @@ let RoomsPlaying = [];
 
 io.on('connection', socket => {
   console.log("someone connection");
-  
-  // socket.on("newRoom", () => {
-  //   let roomPin = randomPin();
-  //   console.log(roomPin);
-  //   socket.emit("getRoom", roomPin);
-  //   let room = new Room(roomPin, socket.id);
-  //   Rooms.push(room);
-  //   // console.log(Rooms);
-  // })
-
   socket.on('joinRoom', (roomPin) => {
     socket.join(roomPin);
     console.log(roomPin);
@@ -74,11 +66,7 @@ io.on('connection', socket => {
       io.to(roomPin).emit("userInLobby", room.users);
       io.to(roomPin).emit("noti", 'co ng join room' + socket.id);
     }
-    //console.log(room);
-
-    //checkword();
   })
-
   socket.on("startPress", (roomPin) => {
     console.log("startPress" + roomPin);
     let room = findRoomByPin(Rooms, roomPin);
@@ -87,13 +75,10 @@ io.on('connection', socket => {
     RoomsPlaying.push(main);
     main.start();
   })
-
   socket.on("wordAnswer", (data)=>{
     let main = RoomsPlaying.find(ele => ele.room.roomPin == data.roomPin);
     main.answerWord(data.word);
   })
-
-  // console.log("connection join some room" + socket.rooms.id);
 });
 
 
