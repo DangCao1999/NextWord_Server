@@ -3,7 +3,7 @@ const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
 
-const { randomPin, findRoomByPin } = require('./untils/until');
+const { randomPin, findRoomByPin, makeId } = require('./untils/until');
 const app = express();
 const cors = require('cors');
 const server = http.createServer(app);
@@ -41,28 +41,30 @@ app.get('/', (req, res) => {
 
 
 app.post('/newroom', (req, res)=>{
-  console.log("----new room---- "+req.body);
-  let roomPin = randomPin();
+  //console.log("----new room---- "+req.body);
+  let roomPin = makeId();
   let room = new Room(roomPin, req.body.socketId);
   Rooms.push(room);
-  res.status(200).send({roomId: roomPin});
+  console.log('create room' + roomPin);
+  res.status(200).send({roomPin: roomPin});
 });
 
 let Rooms = [];
 let RoomsPlaying = [];
 
-io.on('connection', socket => {
+io.on('connection', (socket)=> {
   console.log("someone connection");
-  socket.on('joinRoom', (roomPin) => {
+  socket.on('joinRoom', (roomPin,user) => {
     socket.join(roomPin);
-    console.log(roomPin);
-    let user = new User(socket.id, 'aaa');
+    console.log('check roomPin' + roomPin);
+    let userNew = new User(user['id'], user['givenName'], user['email'], user['photo']);
+    console.log("user join room with id" + userNew.id);
     let room = findRoomByPin(Rooms, roomPin);
     if (room == undefined) {
       io.to(roomPin).emit('noti', "khong co phong nay");
     }
     else {
-      room.addUser(user);
+      room.addUser(userNew);
       io.to(roomPin).emit("userInLobby", room.users);
       io.to(roomPin).emit("noti", 'co ng join room' + socket.id);
     }
@@ -80,8 +82,6 @@ io.on('connection', socket => {
     main.answerWord(data.word);
   })
 });
-
-
 
 server.listen(3000, () => {
   console.log('listening on *:3000');

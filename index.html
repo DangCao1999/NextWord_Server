@@ -71,7 +71,7 @@
     }
     function joinRoom(roomPin) {
         console.log(roomPin);
-        socket.emit("joinRoom", roomPin);
+        socket.emit("joinRoom", roomPin, {id:'123', givenName:"Test1",email: 'Test1@gmail.com', photo:'https://lh3.googleusercontent.com/-05ETEA-8F5o/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucn2MjfiaUZLB8DSY1n5ivfXmeRsmg/s88-c-k-c0x00ffffff-no-rj-mo/photo.jpg'});
     }
     function startRoom() {
         console.log("start " + roomPin);
