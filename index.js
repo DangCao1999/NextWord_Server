@@ -42,7 +42,8 @@ app.get('/', (req, res) => {
 
 app.post('/newroom', (req, res)=>{
   //console.log("----new room---- "+req.body);
-  let roomPin = makeId();
+  // let roomPin = makeId();
+  let roomPin = randomPin().toString();
   let room = new Room(roomPin, req.body.socketId);
   Rooms.push(room);
   console.log('create room' + roomPin);
@@ -74,7 +75,7 @@ io.on('connection', (socket)=> {
     let room = findRoomByPin(Rooms, roomPin);
     console.log(typeof(roomPin));
     main = new Main(room, io);
-    RoomsPlaying.push(main);
+    RoomsPlaying.push(main);   
     main.start();
   })
   socket.on("wordAnswer", (data)=>{

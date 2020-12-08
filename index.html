@@ -59,6 +59,7 @@
         })
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 roomPin = data.roomId;
                 console.log(typeof(roomPin));
                 console.log(roomPin);

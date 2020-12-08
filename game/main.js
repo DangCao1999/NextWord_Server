@@ -1,4 +1,5 @@
-
+// let admin = require('firebase-admin');
+// let db = admin.firestore();
 const config = require('../untils/config');
 
 let checkword = require('./word');
@@ -13,14 +14,15 @@ class Main {
     this.usersLose = [],
     this.turnCounter = 0;
     this.timeAndNextTurnFlag = {
-      time: 0,
+      time: 10,
       nextTurnFlag: true,
     }
     this.wordAnswer = '';
   }
-
+  
   async start()
   {
+    await this.initGame();
     while (this.checkUserLength(this.users)) {
       if (this.wordAnswer != '') {
         console.log("wordAnswer");
@@ -35,17 +37,18 @@ class Main {
         this.sendMess('wordStore' ,this.wordStore, this.io, this.room.roomPin); // send wordstore
       }
       else {
-        if(this.timeAndNextTurnFlag.time > 10)
+        if(this.timeAndNextTurnFlag.time < 0)
         {
           this.timeAndNextTurnFlag.nextTurnFlag = true;  
           this.users = this.executeUserLose(this.users, this.turnCounter, this.io, this.room.roomPin);
           this.turnCounter = this.increaseCounter(this.users.length, this.turnCounter);
         }
       }
-  
+      
+
       this.sendTurn(this.timeAndNextTurnFlag, this.users[this.turnCounter], this.io, this.room.roomPin);
       this.io.to(this.room.roomPin.toString()).emit("time", this.timeAndNextTurnFlag.time);
-      this.timeAndNextTurnFlag.time++;
+      this.timeAndNextTurnFlag.time--;
       
   
       await this.sleep(1000);
@@ -86,6 +89,7 @@ class Main {
     io.to(roomPin.toString()).emit("loseUser", users[turnCounter]);
     this.usersLose.push(users[turnCounter]);
     users.splice(turnCounter, 1); //find and remove
+    this.sendMess("usersLiveCount", users.length, io, roomPin);
     this.sendMess("usersLive", users, io, roomPin);
     return users;
   }
@@ -97,7 +101,7 @@ class Main {
         user: user
       }
       this.sendMess('turnUser', mess, io, roomPin);
-      timeAndNextTurnFlag.time = 0;
+      timeAndNextTurnFlag.time = 10;
       timeAndNextTurnFlag.nextTurnFlag = false;
 
     }
@@ -130,7 +134,22 @@ class Main {
     this.wordAnswer = word;
     this.users[this.turnCounter].addWordAnswer(word);
   }
-
+  async initGame()
+  {
+    //this.sendMess("start", this.users.length, this.io, this.room.roomPin);
+    // this.sendMess("usersLive", this.users, this.io, this.room.roomPin);
+    this.sendMess("start", "start", this.io, this.room.roomPin);
+     await this.sleep(500);
+    this.sendMess("usersTotal", this.users.length, this.io, this.room.roomPin);
+  }
+  saveDataGame()
+  {
+    let data = {
+      roomPin: this.room.roomPin,
+      userRank: this.usersLose,
+    }
+    // db.collection("GameData").add().then(value => {value.})
+  }
   
 }
 
