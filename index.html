@@ -37,20 +37,20 @@
     socket.on('noti', (mess) => {
         console.log(mess);
     })
-    socket.on('turnUser', (user)=>{
+    socket.on('turnUser', (user) => {
         console.log("turn of: " + user.id);
     })
-    socket.on('time', (mess)=>{
+    socket.on('time', (mess) => {
         console.log(mess);
     })
 
-    socket.on("loseUser", (user)=>{
-        console.log("lose user "+ user.id);
+    socket.on("loseUser", (user) => {
+        console.log("lose user " + user.id);
     })
     function newRoom() {
         //socket.emit("newRoom");
         // joinRoom();
-        fetch('https://nextwordserver.herokuapp.com/newroom', {
+        fetch('http://192.168.0.102:3000/newroom', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -61,27 +61,27 @@
             .then(data => {
                 console.log(data);
                 roomPin = data.roomId;
-                console.log(typeof(roomPin));
+                console.log(typeof (roomPin));
                 console.log(roomPin);
             });
     }
-    function joinClick(){
+    function joinClick() {
         let roomId = document.getElementById("m").value;
         roomPin = roomId;
         joinRoom(roomPin);
     }
     function joinRoom(roomPin) {
         console.log(roomPin);
-        socket.emit("joinRoom", roomPin, {id:'123', givenName:"Test1",email: 'Test1@gmail.com', photo:'https://lh3.googleusercontent.com/-05ETEA-8F5o/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucn2MjfiaUZLB8DSY1n5ivfXmeRsmg/s88-c-k-c0x00ffffff-no-rj-mo/photo.jpg'});
+        socket.emit("joinRoom", roomPin, { id: '123', givenName: "Test1", email: 'Test1@gmail.com', photo: 'https://lh3.googleusercontent.com/-05ETEA-8F5o/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucn2MjfiaUZLB8DSY1n5ivfXmeRsmg/s88-c-k-c0x00ffffff-no-rj-mo/photo.jpg' });
     }
     function startRoom() {
         console.log("start " + roomPin);
         socket.emit("startPress", roomPin);
     }
 
-    function sendAnswer(){
+    function sendAnswer() {
         let value = document.getElementById('answer').value;
-        socket.emit("wordAnswer", value);
+        socket.emit("wordAnswer", {roomPin: roomPin,  word: value});
     }
     // joinRoom(-1);
 </script>

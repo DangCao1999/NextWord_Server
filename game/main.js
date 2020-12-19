@@ -5,86 +5,88 @@ const config = require('../untils/config');
 let checkword = require('./word');
 
 class Main {
-  constructor(room, io)
-  {
+  constructor(room, io) {
     this.room = room,
-    this.io = io,
-    this.wordStore = [],
-    this.users = room.users,
-    this.usersLose = [],
-    this.turnCounter = 0;
+      this.io = io,
+      this.wordStore = [],
+      this.users = room.users,
+      this.usersLose = [],
+      this.turnCounter = 0;
     this.timeAndNextTurnFlag = {
       time: 10,
       nextTurnFlag: true,
     }
     this.wordAnswer = '';
   }
-  
-  async start()
-  {
+
+  async start() {
     await this.initGame();
     while (this.checkUserLength(this.users)) {
       if (this.wordAnswer != '') {
         console.log("wordAnswer");
         console.log(this.wordAnswer);
         this.users[this.turnCounter].addWordAnswer(this.wordAnswer);
-        if (this.checkWordCorrect(this.wordAnswer, this.wordStore)) {      
+        if (this.checkWordCorrect(this.wordAnswer, this.wordStore)) {
           this.users = this.executeUserLose(this.users, this.turnCounter, this.io, this.room.roomPin);
         }
         this.timeAndNextTurnFlag.nextTurnFlag = true;
         this.turnCounter = this.increaseCounter(this.users.length, this.turnCounter);
         this.wordAnswer = '';
-        this.sendMess('wordStore' ,this.wordStore, this.io, this.room.roomPin); // send wordstore
+        this.sendMess('wordStore', this.wordStore, this.io, this.room.roomPin); // send wordstore
       }
       else {
-        if(this.timeAndNextTurnFlag.time < 0)
-        {
-          this.timeAndNextTurnFlag.nextTurnFlag = true;  
+        if (this.timeAndNextTurnFlag.time < 0) {
+          this.timeAndNextTurnFlag.nextTurnFlag = true;
           this.users = this.executeUserLose(this.users, this.turnCounter, this.io, this.room.roomPin);
           this.turnCounter = this.increaseCounter(this.users.length, this.turnCounter);
         }
       }
-      
+
 
       this.sendTurn(this.timeAndNextTurnFlag, this.users[this.turnCounter], this.io, this.room.roomPin);
       this.io.to(this.room.roomPin.toString()).emit("time", this.timeAndNextTurnFlag.time);
       this.timeAndNextTurnFlag.time--;
-      
-  
+
+
       await this.sleep(1000);
     }
-  
+
     //winner is extent in array users
     console.log("winner" + this.users.length);
   }
-  
+
 
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-  
-  checkWordCorrect(word, wordStore){
-    let firstCharacterOfWord = word[0];
-    let lastWordOfWordStore = wordStore[wordStore.length-1]
-    let lastCharacterOfWordStore = lastWordOfWordStore[lastWordOfWordStore.length-1];
-    if(wordStore.length == 0)
-    {
-      if(!checkword(word))
-      {
+
+  checkWordCorrect(word, wordStore) {
+
+    //console.log(wordStore.length);
+    if (wordStore.length <= 1) {
+      if (!checkword(word)) {
         return true;
       }
     }
-    else
-    {
-      if(!checkword(word) && firstCharacterOfWord != lastCharacterOfWordStore){
-        return true; // word user send not correct
+    else {
+      let firstCharacterOfWord = word[0];
+      let lastWordOfWordStore = wordStore[wordStore.length - 2]
+      let lastCharacterOfWordStore = lastWordOfWordStore[lastWordOfWordStore.length - 1];
+      console.log("thefirst " + firstCharacterOfWord);
+      console.log("lastWordOfWordStore " + lastWordOfWordStore);
+      console.log("lastcharWordOfWordStore " + lastCharacterOfWordStore);
+      console.log("rs " + firstCharacterOfWord != lastCharacterOfWordStore);
+      console.log("check word " + checkword(word));
+      if (!checkword(word) || firstCharacterOfWord != lastCharacterOfWordStore) {
+        console.log("oh no");
+        return true; // word user send not correct     
       }
     }
     return false;
   }
-  
+
   // function firstSendMess(users, )
-  executeUserLose(users, turnCounter, io, roomPin){
+  executeUserLose(users, turnCounter, io, roomPin) {
     console.log("user lose");
     io.to(roomPin.toString()).emit("loseUser", users[turnCounter]);
     this.usersLose.push(users[turnCounter]);
@@ -93,7 +95,7 @@ class Main {
     this.sendMess("usersLive", users, io, roomPin);
     return users;
   }
-  
+
   sendTurn(timeAndNextTurnFlag, user, io, roomPin) {
     if (timeAndNextTurnFlag.nextTurnFlag) {
       let mess = {
@@ -106,51 +108,47 @@ class Main {
 
     }
   }
-  
-  resetTime()
-  {
+
+  resetTime() {
     return 0;
   }
 
-  sendMess(channel, mess, io, roomPin){
+  sendMess(channel, mess, io, roomPin) {
     io.to(roomPin.toString()).emit(channel, mess);
   }
-  
-  increaseCounter(length, i){
+
+  increaseCounter(length, i) {
     i++;
     if (i >= length - 1) {
       return 0;
     }
     return i;
   }
-  
+
   checkUserLength(users) {
     return users.length > 1;
   }
 
-  answerWord(word)
-  {
+  answerWord(word) {
     this.wordStore.push(word);
     this.wordAnswer = word;
     this.users[this.turnCounter].addWordAnswer(word);
   }
-  async initGame()
-  {
+  async initGame() {
     //this.sendMess("start", this.users.length, this.io, this.room.roomPin);
     // this.sendMess("usersLive", this.users, this.io, this.room.roomPin);
     this.sendMess("start", "start", this.io, this.room.roomPin);
-     await this.sleep(500);
+    await this.sleep(500);
     this.sendMess("usersTotal", this.users.length, this.io, this.room.roomPin);
   }
-  saveDataGame()
-  {
+  saveDataGame() {
     let data = {
       roomPin: this.room.roomPin,
       userRank: this.usersLose,
     }
     // db.collection("GameData").add().then(value => {value.})
   }
-  
+
 }
 
 
@@ -204,7 +202,7 @@ class Main {
 //     sendTurn(timeAndNextTurnFlag, users[turnCounter], io, room.roomPin);
 //     io.to(room.roomPin.toString()).emit("time", timeAndNextTurnFlag.time);
 //     timeAndNextTurnFlag.time++;
-    
+
 
 //     await sleep(1000);
 //   }
