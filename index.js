@@ -31,14 +31,10 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 
-
 /// Add router here
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
-
-
-
 
 app.post('/newroom', (req, res)=>{
   //console.log("----new room---- "+req.body);
