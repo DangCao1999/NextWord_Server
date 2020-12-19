@@ -42,7 +42,7 @@ class Main {
         }
       }
 
-
+      console.log("turn Counter" + this.turnCounter);
       this.sendTurn(this.timeAndNextTurnFlag, this.users[this.turnCounter], this.io, this.room.roomPin);
       this.io.to(this.room.roomPin.toString()).emit("time", this.timeAndNextTurnFlag.time);
       this.timeAndNextTurnFlag.time--;
@@ -72,13 +72,13 @@ class Main {
       let firstCharacterOfWord = word[0];
       let lastWordOfWordStore = wordStore[wordStore.length - 2]
       let lastCharacterOfWordStore = lastWordOfWordStore[lastWordOfWordStore.length - 1];
-      console.log("thefirst " + firstCharacterOfWord);
-      console.log("lastWordOfWordStore " + lastWordOfWordStore);
-      console.log("lastcharWordOfWordStore " + lastCharacterOfWordStore);
-      console.log("rs " + firstCharacterOfWord != lastCharacterOfWordStore);
-      console.log("check word " + checkword(word));
+      //console.log("thefirst " + firstCharacterOfWord);
+      //console.log("lastWordOfWordStore " + lastWordOfWordStore);
+      //console.log("lastcharWordOfWordStore " + lastCharacterOfWordStore);
+      //console.log("rs " + firstCharacterOfWord != lastCharacterOfWordStore);
+      //console.log("check word " + checkword(word));
       if (!checkword(word) || firstCharacterOfWord != lastCharacterOfWordStore) {
-        console.log("oh no");
+        //console.log("oh no");
         return true; // word user send not correct     
       }
     }
@@ -98,6 +98,7 @@ class Main {
 
   sendTurn(timeAndNextTurnFlag, user, io, roomPin) {
     if (timeAndNextTurnFlag.nextTurnFlag) {
+      console.log(user.id);
       let mess = {
         turnCounter: this.turnCounter,
         user: user
@@ -119,7 +120,7 @@ class Main {
 
   increaseCounter(length, i) {
     i++;
-    if (i >= length - 1) {
+    if (i >= length) {
       return 0;
     }
     return i;
