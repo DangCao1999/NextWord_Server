@@ -1,8 +1,19 @@
+/*-----Import Lib------*/
 const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
 
+/*-----Firebase Config-----*/
+const admin = require("firebase-admin");
+let serviceAccount = require("./key.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://nextword3659.firebaseio.com"
+});
+
+
+/*-----BL-----*/
 const { randomPin, findRoomByPin, makeId } = require('./untils/until');
 const app = express();
 const cors = require('cors');
@@ -15,16 +26,11 @@ const Room = require('./models/room');
 const User = require('./models/user');
 
 const bodyParser = require('body-parser');
-const Main = require('./game/main');
+const Main = require('./BLL/game/main');
 
-let admin = require("firebase-admin");
 
-let serviceAccount = require("./key.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://nextword3659.firebaseio.com"
-});
+
 
 //add middleware
 app.use(cors());
@@ -32,6 +38,10 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 
 /// Add router here
+
+app.use('/user',require('./router/userRouter'));
+app.use('/room',require('./router/roomRouter'));
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });

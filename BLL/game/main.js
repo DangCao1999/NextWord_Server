@@ -1,6 +1,8 @@
-// let admin = require('firebase-admin');
-// let db = admin.firestore();
-const config = require('../untils/config');
+var admin = require('firebase-admin');
+
+var db = admin.firestore();
+
+const config = require('../../untils/config');
 
 let checkword = require('./word');
 
@@ -25,7 +27,7 @@ class Main {
       if (this.wordAnswer != '') {
         console.log("wordAnswer");
         console.log(this.wordAnswer);
-        this.users[this.turnCounter].addWordAnswer(this.wordAnswer);
+        //this.users[this.turnCounter].addWordAnswer(this.wordAnswer);
         if (this.checkWordCorrect(this.wordAnswer, this.wordStore)) {
           this.users = this.executeUserLose(this.users, this.turnCounter, this.io, this.room.roomPin);
         }
@@ -50,9 +52,12 @@ class Main {
 
       await this.sleep(1000);
     }
-
+    //push userwin to lose
+    this.usersLose.push(this.users[this.turnCounter]);
     //winner is extent in array users
-    console.log("winner" + this.users.length);
+    //console.log("winner" + this.users.length);
+    console.log(this.usersLose);
+    this.saveDataGame();
   }
 
 
@@ -142,14 +147,35 @@ class Main {
     await this.sleep(500);
     this.sendMess("usersTotal", this.users.length, this.io, this.room.roomPin);
   }
-  saveDataGame() {
+  async saveDataGame() {
+    console.log(this.usersLose);
+    let lengthUser = this.usersLose.length;
+    let winner = this.usersLose[lengthUser - 1];
     let data = {
       roomPin: this.room.roomPin,
-      userRank: this.usersLose,
+      wordStore: this.wordStore,
+      winner: {
+        uid: winner.id,
+        word: winner.word
+      }
     }
-    // db.collection("GameData").add().then(value => {value.})
+    await db.collection("GameData").add(data).then(docref => {
+      let places = 0;
+      for(let i = lengthUser - 1; i >= 0; i--)
+      {
+        console.log(i);
+        console.log(this.usersLose[i]);
+        let user = this.usersLose[i];
+        let usertemp = {
+          places: places,
+          id: user.id,
+          word: user.word,
+        }
+        db.collection("GameData").doc(docref.id).collection("Users").doc(user.id).set(usertemp);
+        places++;
+      }
+    });
   }
-
 }
 
 

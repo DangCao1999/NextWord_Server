@@ -21,8 +21,15 @@
 </script>
 
 <body>
+    <label for="m">room</label> 
     <input id="m" autocomplete="off" />
+    <br>
+    <label for="uid">id</label>
+    <input id="uid" autocomplete="off" />
+    <br>
+    <label for="answer">answer</label>
     <input id="answer" autocomplete="off" />
+    <br>
     <button id="join" onclick="joinClick()">join</button>
     <button id="new" onclick="newRoom()">new</button>
     <button id="start" onclick="startRoom()">start</button>
@@ -50,7 +57,7 @@
     function newRoom() {
         //socket.emit("newRoom");
         // joinRoom();
-        fetch('https://nextwordsever.herokuapp.com/newroom', {
+        fetch('http://localhost:3000/newroom', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -72,7 +79,8 @@
     }
     function joinRoom(roomPin) {
         console.log(roomPin);
-        socket.emit("joinRoom", roomPin, { id: '123', givenName: "Test1", email: 'Test1@gmail.com', photo: 'https://lh3.googleusercontent.com/-05ETEA-8F5o/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucn2MjfiaUZLB8DSY1n5ivfXmeRsmg/s88-c-k-c0x00ffffff-no-rj-mo/photo.jpg' });
+        let id = document.getElementById("uid").value;
+        socket.emit("joinRoom", roomPin, { id: id, givenName: "Test1", email: 'Test1@gmail.com', photo: 'https://lh3.googleusercontent.com/-05ETEA-8F5o/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucn2MjfiaUZLB8DSY1n5ivfXmeRsmg/s88-c-k-c0x00ffffff-no-rj-mo/photo.jpg' });
     }
     function startRoom() {
         console.log("start " + roomPin);
