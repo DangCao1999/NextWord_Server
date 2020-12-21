@@ -86,7 +86,7 @@ io.on('connection', (socket)=> {
   })
   socket.on("wordAnswer", (data)=>{
     let main = RoomsPlaying.find(ele => ele.room.roomPin == data.roomPin);
-    main.answerWord(data.word);
+    main.answerWord(data.word.toLowerCase());
   })
 });
 

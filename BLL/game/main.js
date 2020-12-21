@@ -80,7 +80,7 @@ class Main {
       }
     }
     else {
-      let firstCharacterOfWord = word[0];
+      let firstCharacterOfWord = word[0].toLowerCase();
       let lastWordOfWordStore = wordStore[wordStore.length - 2]
       let lastCharacterOfWordStore = lastWordOfWordStore[lastWordOfWordStore.length - 1];
       //console.log("thefirst " + firstCharacterOfWord);
@@ -181,6 +181,7 @@ class Main {
           id: user.id,
           word: user.word,
           photo: user.photoURL,
+          name: user.name
         }
         db.collection("GameData").doc(docref.id).collection("Users").doc(user.id).set(usertemp);
         places++;
