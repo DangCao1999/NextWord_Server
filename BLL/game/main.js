@@ -1,4 +1,5 @@
 var admin = require('firebase-admin');
+const { Socket } = require('socket.io');
 
 var db = admin.firestore();
 
@@ -52,12 +53,17 @@ class Main {
 
       await this.sleep(1000);
     }
+    //send event endGame
+    
     //push userwin to lose
     this.usersLose.push(this.users[this.turnCounter]);
     //winner is extent in array users
     //console.log("winner" + this.users.length);
-    console.log(this.usersLose);
-    this.saveDataGame();
+    //console.log(this.usersLose);
+    let rid = await this.saveDataGame();
+    console.log(rid);
+    this.sendMess("endGame", {rid:rid,winner: this.users[this.turnCounter]}, this.io, this.room.roomPin);
+    
   }
 
 
@@ -111,7 +117,6 @@ class Main {
       this.sendMess('turnUser', mess, io, roomPin);
       timeAndNextTurnFlag.time = 10;
       timeAndNextTurnFlag.nextTurnFlag = false;
-
     }
   }
 
@@ -144,11 +149,16 @@ class Main {
     //this.sendMess("start", this.users.length, this.io, this.room.roomPin);
     // this.sendMess("usersLive", this.users, this.io, this.room.roomPin);
     this.sendMess("start", "start", this.io, this.room.roomPin);
-    await this.sleep(500);
+    await this.sleep(5500);
     this.sendMess("usersTotal", this.users.length, this.io, this.room.roomPin);
+    let mess = {
+      turnCounter: this.turnCounter,
+      user: this.users[this.turnCounter]
+    }
+    this.sendMess('turnUser', mess, this.io, this.room.roomPin);
   }
   async saveDataGame() {
-    console.log(this.usersLose);
+    //console.log(this.usersLose);
     let lengthUser = this.usersLose.length;
     let winner = this.usersLose[lengthUser - 1];
     let data = {
@@ -159,21 +169,23 @@ class Main {
         word: winner.word
       }
     }
-    await db.collection("GameData").add(data).then(docref => {
+    return await db.collection("GameData").add(data).then(docref => {
       let places = 0;
       for(let i = lengthUser - 1; i >= 0; i--)
       {
-        console.log(i);
-        console.log(this.usersLose[i]);
+        //console.log(i);
+        //console.log(this.usersLose[i]);
         let user = this.usersLose[i];
         let usertemp = {
           places: places,
           id: user.id,
           word: user.word,
+          photo: user.photoURL,
         }
         db.collection("GameData").doc(docref.id).collection("Users").doc(user.id).set(usertemp);
         places++;
       }
+      return docref.id;
     });
   }
 }
