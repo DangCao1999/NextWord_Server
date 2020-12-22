@@ -17,7 +17,10 @@ module.exports.addNewUser = async (req, res) => {
             // true for user not exist in database
             res.status(201).send({mess: "OK"});
         }
-        res.status(200).send({mess: "OK"});
+        else
+        {
+            res.status(200).send({mess: "OK"});
+        }
     }
     catch(e)
     {

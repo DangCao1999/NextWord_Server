@@ -2,6 +2,7 @@ var admin = require('firebase-admin');
 const { Socket } = require('socket.io');
 
 var db = admin.firestore();
+const RoomDAO = require('../../DAL/RoomDAO');
 
 const config = require('../../untils/config');
 
@@ -169,25 +170,26 @@ class Main {
         word: winner.word
       }
     }
-    return await db.collection("GameData").add(data).then(docref => {
-      let places = 0;
-      for(let i = lengthUser - 1; i >= 0; i--)
-      {
-        //console.log(i);
-        //console.log(this.usersLose[i]);
-        let user = this.usersLose[i];
-        let usertemp = {
-          places: places,
-          id: user.id,
-          word: user.word,
-          photo: user.photoURL,
-          name: user.name
-        }
-        db.collection("GameData").doc(docref.id).collection("Users").doc(user.id).set(usertemp);
-        places++;
-      }
-      return docref.id;
-    });
+    return RoomDAO.storeRoom(data, lengthUser, this.usersLose);
+    // return await db.collection("GameData").add(data).then(docref => {
+    //   let places = 0;
+    //   for(let i = lengthUser - 1; i >= 0; i--)
+    //   {
+    //     //console.log(i);
+    //     //console.log(this.usersLose[i]);
+    //     let user = this.usersLose[i];
+    //     let usertemp = {
+    //       places: places,
+    //       id: user.id,
+    //       word: user.word,
+    //       photo: user.photoURL,
+    //       name: user.name
+    //     }
+    //     db.collection("GameData").doc(docref.id).collection("Users").doc(user.id).set(usertemp);
+    //     places++;
+    //   }
+    //   return docref.id;
+    // });
   }
 }
 
