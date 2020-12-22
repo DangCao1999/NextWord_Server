@@ -17,7 +17,7 @@ class Main {
       this.usersLose = [],
       this.turnCounter = 0;
     this.timeAndNextTurnFlag = {
-      time: 10,
+      time: 15,
       nextTurnFlag: true,
     }
     this.wordAnswer = '';
@@ -116,7 +116,7 @@ class Main {
         user: user
       }
       this.sendMess('turnUser', mess, io, roomPin);
-      timeAndNextTurnFlag.time = 10;
+      timeAndNextTurnFlag.time = 15;
       timeAndNextTurnFlag.nextTurnFlag = false;
     }
   }

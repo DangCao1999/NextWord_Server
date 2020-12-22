@@ -47,13 +47,26 @@ app.get('/', (req, res) => {
 });
 
 app.post('/newroom', (req, res)=>{
-  //console.log("----new room---- "+req.body);
-  // let roomPin = makeId();
-  let roomPin = randomPin().toString();
-  let room = new Room(roomPin, req.body.socketId);
+  console.log("----new room---- "+req.body.id);
+  let roomPin = makeId();
+  //let roomPin = randomPin().toString();
+  let room = new Room(roomPin, req.body.id);
   Rooms.push(room);
-  console.log('create room' + roomPin);
-  res.status(200).send({roomPin: roomPin});
+  //console.log('create room' + roomPin);
+  console.log(room);
+  res.status(200).send({roomPin: roomPin, ownerId: req.body.id});
+});
+app.get('/newroom/:id', (req, res)=> {
+  
+  let rid = req.params.id;
+  // console.log(rid);
+  let room = Rooms.find(ele => ele.roomPin == rid);
+  //console.log(room);
+  if(room)
+  {
+    return res.status(200).send({roomPin: room.roomPin, ownerId: room.ownerId});
+  }
+    return res.status(404).send("not found");
 });
 
 let Rooms = [];
